@@ -5,7 +5,11 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('kokoro-v1.0.onnx', '.'), ('voices-list.txt', '.')],
+    datas=[
+        ('voices-list.txt', '.'),
+        ('.venv/lib/python3.12/site-packages/language_tags', 'language_tags'),
+        ('.venv/lib/python3.12/site-packages/espeakng_loader', 'espeakng_loader')
+    ],
     hiddenimports=['numpy', 'sounddevice', 'PyQt6', 'kokoro_onnx'],
     hookspath=[],
     hooksconfig={},
