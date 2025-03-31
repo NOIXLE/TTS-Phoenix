@@ -9,3 +9,8 @@ main.spec
 
 # Virtual environments
 .venv
+
+# kokoro files and dependencies
+voices-v1.0.bin
+kokoro-v1.0.onnx
+espeak-ng.dll

@@ -1,6 +1,5 @@
-import sys, os, json, re, queue, threading
+import sys, os, json, re, queue, threading, datetime
 import sounddevice as sd
-import datetime
 from PyQt6.QtWidgets import ( 
     QApplication,
     QWidget,
@@ -19,14 +18,24 @@ from PyQt6.QtCore import (
 )
 import numpy as np
 from kokoro_onnx import Kokoro
+import onnxruntime as ort
 
 def get_model_path():
     if getattr(sys, 'frozen', False):
         return os.path.join(sys._MEIPASS, "kokoro-v1.0.onnx")
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "kokoro-v1.0.onnx")
 
+def get_voices_path():
+    if getattr(sys, 'frozen', False):
+        return os.path.join(sys._MEIPASS, "voices-v1.0.bin")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "voices-v1.0.bin")
+
+def get_voicelist_path():
+    if getattr(sys, 'frozen', False):
+        return os.path.join(sys._MEIPASS, "voices-list.txt")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "voices-list.txt")
+
 LOG_FILE = "tts_log.txt"
-VOICES_FILE = "voices-list.txt"
 CONFIG_FILE = "config.json"
 
 class TTSThread(QThread):
@@ -77,6 +86,8 @@ class TTSApp(QWidget):
     def __init__(self):
         super().__init__()
         self.model_path = get_model_path()
+        self.voices_path = get_voices_path()
+        self.voiceslist_path = get_voicelist_path()
         self.kokoro = None
         self.voices = self.load_voices()
         self.config = self.load_config()
@@ -93,7 +104,7 @@ class TTSApp(QWidget):
         threading.Thread(target=self.load_kokoro, daemon=True).start()
 
     def load_kokoro(self):
-        self.kokoro = Kokoro(self.model_path, "voices-v1.0.bin")
+        self.kokoro = Kokoro(self.model_path, self.voices_path)
 
     def init_ui(self):
         self.setWindowTitle("Phoenix TTS")
@@ -216,7 +227,7 @@ class TTSApp(QWidget):
 
     def load_voices(self):
         try:
-            with open(VOICES_FILE, "r", encoding="utf-8") as file:
+            with open(self.voiceslist_path, "r", encoding="utf-8") as file:
                 return [line.strip() for line in file.readlines() if line.strip()]
         except FileNotFoundError:
             return []
